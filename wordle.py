@@ -1,6 +1,5 @@
 import string, sys, random
 from termcolor import colored
-from time import process_time
 
 # hash first char for placement in load array
 def hash(word, whole=True):
@@ -67,6 +66,7 @@ def compare(win_word, guess_word, valid_letters):
             valid_letters.pop(hash(guess_word[i], False))
     print()
 
+# checks words for duplicates
 def duplicate_filter(win_word):
     duplicates = {}
     count = 0
@@ -80,14 +80,15 @@ def duplicate_filter(win_word):
             count += 1
     return (count > 0)
 
-
+# prints alphabet onto screen
 def print_letters(valid):
     for i in valid:
         print(i, end=" ")
     print()
 
-        
+
 def main():
+    # list of alphabet
     valid = [i for i in string.ascii_lowercase]
     TURNS = 5
     # entire list
@@ -96,11 +97,12 @@ def main():
     win_word = winning_word(word_list)
 
     print(colored("Welcome to Wordle", "blue"))
-    i = 1
 
+    # warning if there is a duplicate letter in word
     if duplicate_filter(win_word):
         print(colored("WARNING DUPLICATE LETTER", "red"))
-    print(win_word)
+
+    i = 1
     # main turn loop
     while i < TURNS + 1:
         print_letters(valid)
