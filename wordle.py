@@ -3,8 +3,11 @@ from termcolor import colored
 from time import process_time
 
 # hash first char for placement in load array
-def hash(word):
-    char = word[0]
+def hash(word, whole=True):
+    if whole:
+        char = word[0]
+    else:
+        char = word
     index = string.ascii_lowercase.index(char)
     return index
 
@@ -24,15 +27,7 @@ def guess(num):
     if len(ask) == 5 or ask.isalpha():
         return ask
     return guess(num)
-        
-    """
-    for i in ask:
-        if i.isnumeric() or i in string.punctuation:
-            return quess(num)
-    if len(ask) != 5:
-        return quess(num)
-    """
-    
+         
 
 # chooses random word from memory
 def winning_word(word_list):        
@@ -58,21 +53,42 @@ def check(word, word_list):
         return True
     return False
                   
-def compare(win_word, guess_word):
+def compare(win_word, guess_word, valid_letters):
     # checks postion of word for correctness
     for i in range(len(guess_word)):
         if guess_word[i] == win_word[i]:
+            valid_letters[hash(guess_word[i], False)] = colored(guess_word[i], "green")
             print(colored(guess_word[i], "green"), end="")
         elif guess_word[i] in win_word:
             print(colored(guess_word[i], "yellow"), end="")
+            valid_letters[hash(guess_word[i], False)] = colored(guess_word[i], "yellow")
         else:
-                print(colored(guess_word[i], "white"), end="")
+            print(colored(guess_word[i], "white"), end="")
+            valid_letters.pop(hash(guess_word[i], False))
     print()
-        
+
+def duplicate_filter(win_word):
+    duplicates = {}
+    count = 0
+    for char in win_word:
+        if char in duplicates:
+            duplicates[char] += 1
+        else:
+            duplicates[char] = 1
+    for key, value in duplicates.items():
+        if value > 1:
+            count += 1
+    return (count > 0)
+
+
+def print_letters(valid):
+    for i in valid:
+        print(i, end=" ")
+    print()
+
         
 def main():
-    a = [i for i in string.ascii_lowercase]
-    print(a)
+    valid = [i for i in string.ascii_lowercase]
     TURNS = 5
     # entire list
     word_list = load("wordle.txt")
@@ -81,12 +97,17 @@ def main():
 
     print(colored("Welcome to Wordle", "blue"))
     i = 1
+
+    if duplicate_filter(win_word):
+        print(colored("WARNING DUPLICATE LETTER", "red"))
+    print(win_word)
     # main turn loop
     while i < TURNS + 1:
+        print_letters(valid)
         ask = guess(i)
         # if in list process
         if check(ask, word_list):  
-            compare(win_word, ask)
+            compare(win_word, ask, valid)
             i += 1
         else:
             print(colored("Word not in list", "red"))
@@ -94,6 +115,7 @@ def main():
         # if words match exactly
         if ask == win_word:
             print(colored("WINNER", "red"))
+            break
     
     print(colored("The word was ", "blue") + colored(win_word.upper(), "green"))
     # end of game options
